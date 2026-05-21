@@ -1,0 +1,1392 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Informatika App: Perangkat Keras</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Handjet:wght@600;800&family=Jost:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --text-main: #0F172A; --text-heading: #1E3A8A; --text-sub: #334155;
+            --dark-blue: #1E3A8A; --light-blue: #3B82F6; --accent: #D97706; 
+            --success: #10B981; --danger: #EF4444;
+            --glass-bg: rgba(255, 255, 255, 0.45); --glass-card: rgba(255, 255, 255, 0.65);
+            --glass-border: rgba(255, 255, 255, 0.4); --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+            --quiz-correct-bg: rgba(209, 250, 229, 0.8); --quiz-wrong-bg: rgba(254, 226, 226, 0.8);
+        }
+        body.dark-theme {
+            --text-main: #F8FAFC; --text-heading: #93C5FD; --text-sub: #94A3B8;
+            --dark-blue: #93C5FD; --light-blue: #60A5FA; --accent: #FBBF24; 
+            --glass-bg: rgba(15, 23, 42, 0.5); --glass-card: rgba(30, 41, 59, 0.65);
+            --glass-border: rgba(255, 255, 255, 0.15); --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+            --quiz-correct-bg: rgba(16, 185, 129, 0.3); --quiz-wrong-bg: rgba(239, 68, 68, 0.3);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Jost', sans-serif; color: var(--text-main); display: flex; flex-direction: column; align-items: center; height: 100vh; width: 100vw; overflow: hidden; background-color: #0F172A; transition: color 0.3s ease; }
+        .global-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-image: url('light-bg.jpg'); background-size: cover; background-position: center; background-repeat: no-repeat; z-index: -10; transition: background-image 0.3s ease, filter 0.5s ease; }
+        body.dark-theme .global-bg { filter: brightness(0.7); }
+        #global-ornaments { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: -5; overflow: hidden; }
+        .dynamic-ornament { position: absolute; opacity: 0.30; object-fit: contain; transition: all 0.8s ease-in-out; }
+        .app-top-bar { width: 100%; max-width: 1100px; height: 90px; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; z-index: 1000; margin-top: 10px; }
+        .top-left-status { display: flex; align-items: center; gap: 20px; }
+        .life-container { background: var(--glass-card); backdrop-filter: blur(25px); padding: 8px 20px; border-radius: 30px; border: 1px solid var(--glass-border); font-size: 1.5rem; letter-spacing: 2px; box-shadow: var(--glass-shadow); display: none; }
+        .xp-wrapper { position: relative; display: none; flex-direction: column; align-items: center; margin-top: 15px; }
+        .xp-text { font-family: 'Jost', sans-serif; font-weight: 800; font-size: 1.8rem; color: var(--success); text-shadow: 0 2px 4px rgba(0,0,0,0.2); position: absolute; top: -28px; pointer-events: none; }
+        .xp-container { position: relative; width: 220px; height: 16px; background-color: #383838; border: 2px solid #000; box-shadow: 2px 2px 0px rgba(0,0,0,0.5); overflow: hidden; border-radius: 10px; }
+        .xp-fill { height: 100%; width: 0%; background-color: #82FA58; background-image: repeating-linear-gradient(90deg, transparent, transparent 10px, rgba(0,0,0,0.4) 10px, rgba(0,0,0,0.4) 12px); border-bottom: 3px solid #388A11; transition: width 0.4s ease; }
+        .controls-group { display: flex; gap: 10px; margin-left: auto; flex-wrap: wrap; justify-content: flex-end;}
+        .app-btn { background: var(--glass-card); backdrop-filter: blur(25px); border: 1px solid var(--glass-border); padding: 10px 18px; border-radius: 20px; font-family: 'Jost', sans-serif; font-weight: 600; font-size: 1.1rem; color: var(--text-heading); cursor: pointer; transition: 0.2s; box-shadow: var(--glass-shadow); display: flex; align-items: center; gap: 8px; }
+        .app-btn:hover { transform: translateY(-3px); background: var(--light-blue); color: #fff; border-color: var(--light-blue);}
+        .app-btn img { width: 18px; height: 18px; object-fit: contain; }
+        .app-container { width: 95%; max-width: 1100px; height: calc(100vh - 120px); background: var(--glass-bg); backdrop-filter: blur(25px); border-radius: 25px; border: 1px solid var(--glass-border); box-shadow: var(--glass-shadow); position: relative; overflow: hidden; margin-bottom: 10px; z-index: 10; }
+        .page { position: absolute; top: 0; left: 0; width: 100%; height: 100%; padding: 40px 60px; overflow-y: auto; overflow-x: hidden; background-color: transparent !important; display: none !important; flex-direction: column; padding-bottom: 100px; animation: fadeIn 0.4s ease-out forwards; }
+        .page.active { display: flex !important; }
+        .page > * { position: relative; z-index: 10; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        #page-cover { overflow: hidden; justify-content: center; align-items: center; text-align: center; }
+        .cover-content { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; max-width: 800px; padding: 60px 20px; z-index: 10; }
+        .badge { background: var(--light-blue); color: #fff; padding: 8px 20px; border-radius: 25px; font-weight: bold; font-size: 1.2rem; margin-bottom: 15px; border: 1px solid var(--glass-border); box-shadow: var(--glass-shadow);}
+        .author-centered { margin-top: 30px; font-size: 1.3rem; font-weight: 600; color: var(--text-main); z-index: 10; }
+        
+        .cover-mascot { position: absolute; bottom: 15px; right: -15px; width: 320px; pointer-events: none; z-index: 5; filter: drop-shadow(0 15px 25px rgba(0,0,0,0.4)); animation: floatMascot 4s ease-in-out infinite; }
+        @keyframes floatMascot { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+
+        .mascot { position: fixed; z-index: 105; pointer-events: none; width: 175px; opacity: 0.9; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.3)); transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+        .m-show-left { bottom: 20px; left: max(10px, calc(50vw - 650px)); }
+        .m-show-right { bottom: 20px; right: max(10px, calc(50vw - 650px)); }
+        .mascot.m-lifted { bottom: 85px !important; }
+        .m-hidden { opacity: 0; transform: translateY(80px) scale(0.9); }
+
+        .speech-bubble { position: fixed; background: rgba(255, 255, 255, 0.95); color: var(--dark-blue); padding: 12px 18px; border-radius: 15px; font-family: 'Jost', sans-serif; font-size: 1.1rem; font-weight: 700; box-shadow: 0 8px 25px rgba(0,0,0,0.3); z-index: 106; max-width: 230px; pointer-events: none; transition: all 0.3s ease; border: 3px solid var(--light-blue); text-align: center; }
+        .speech-bubble::after { content: ''; position: absolute; bottom: -12px; width: 0; height: 0; border: 12px solid transparent; border-top-color: rgba(255, 255, 255, 0.95); border-bottom: 0; }
+        .speech-bubble::before { content: ''; position: absolute; bottom: -16px; width: 0; height: 0; border: 14px solid transparent; border-top-color: var(--light-blue); border-bottom: 0; }
+        .sb-left { left: max(20px, calc(50vw - 550px)); bottom: 220px; }
+        .sb-left::after { left: 40px; } .sb-left::before { left: 38px; }
+        .sb-right { right: max(20px, calc(50vw - 550px)); bottom: 220px; }
+        .sb-right::after { right: 40px; } .sb-right::before { right: 38px; }
+
+        h1, h2, h3 { font-family: 'Handjet', cursive; color: var(--text-heading); letter-spacing: 1px; }
+        h1 { font-weight: 800; text-align: center; margin-bottom: 15px; line-height: 1.2; text-transform: uppercase; font-size: 4rem;}
+        h2 { font-weight: 700; font-size: 2.1rem; margin-bottom: 20px; padding-bottom: 5px; border-bottom: 4px solid var(--accent); display: inline-block; line-height: 1.2; }
+        h3 { font-weight: 700; font-family: 'Jost', sans-serif;} 
+        
+        p, li { font-size: 1.4rem; line-height: 1.7; color: var(--text-main); font-family: 'Jost', sans-serif; font-weight: 500;}
+        
+        .quote-text { font-family: 'Jost', sans-serif; font-style: italic; font-weight: 500; font-size: 1.6rem; color: var(--text-heading); text-align: center; margin: 25px 0; }
+        .note { font-family: 'Jost', sans-serif; font-style: italic; font-weight: 600; font-size: 1.4rem; color: var(--text-heading); background: var(--glass-card); border: 1px solid var(--glass-border); padding: 20px; border-left: 6px solid var(--light-blue); border-radius: 12px; margin: 25px 0; box-shadow: var(--glass-shadow); }
+        
+        .placeholder-image { position: relative; width: 100%; max-width: 450px; min-height: 250px; border-radius: 15px; margin: 25px auto; display: flex; align-items: center; justify-content: center; box-shadow: var(--glass-shadow); border: 2px dashed var(--light-blue); background-color: var(--glass-bg); overflow: hidden; }
+        .placeholder-image img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 2; }
+        .placeholder-text { position: relative; z-index: 1; font-family: 'Jost', sans-serif; font-size: 1.4rem; font-weight: 600; color: var(--text-sub); text-align: center; padding: 20px; opacity: 0.6; }
+
+        .tutorial-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-top: 25px; }
+        .tut-box { background: var(--glass-card); padding: 20px; border-radius: 15px; border: 1px solid var(--glass-border); box-shadow: var(--glass-shadow); display: flex; align-items: flex-start; gap: 15px; }
+        .tut-text h3 { margin-bottom: 5px; font-size: 1.4rem; color: var(--dark-blue); font-weight: 700;}
+        .tut-text p { font-size: 1.2rem; line-height: 1.5; margin: 0; font-weight: 500;}
+
+        #page-map { overflow: hidden !important; }
+        .map-area { position: relative; width: 100%; height: 100%; border-radius: 15px; border: 2px solid var(--glass-border); overflow: hidden; box-shadow: inset 0 0 50px rgba(0,0,0,0.5); min-height: 500px; background: url('background-map.jpg') center/cover; margin-top: 10px;}
+        .map-node { position: absolute; width: 100px; height: 100px; border-radius: 50%; background: var(--glass-card); border: 3px solid var(--text-heading); display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; transition: 0.3s; box-shadow: 0 10px 25px rgba(0,0,0,0.4); text-align: center; backdrop-filter: blur(10px); }
+        .map-node:hover { transform: scale(1.15); border-color: var(--accent); }
+        .map-node.locked { background: rgba(80, 80, 80, 0.9); border-color: #444; cursor: not-allowed; filter: grayscale(100%); opacity: 0.7;}
+        .map-node.locked:hover { transform: scale(1); }
+        
+        .map-node.completed { background: rgba(16, 185, 129, 0.6) !important; backdrop-filter: blur(15px); border-color: #fff !important; }
+        .map-node.completed::after { content: '✔ CLEARED!'; position: absolute; top: 30%; left: 50%; transform: translate(-50%, -50%); font-family: 'Jost', sans-serif; font-size: 1.1rem; font-weight: 800; color: #fff; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); pointer-events: none; z-index: 10; }
+        .map-node.completed .node-image { opacity: 0.3; }
+
+        .node-image { width: 50px; height: 50px; object-fit: contain; margin-bottom: 5px; }
+        .node-label { font-size: 1rem; font-weight: 700; font-family: 'Jost'; color: var(--text-main); background: var(--glass-card); padding: 3px 10px; border-radius: 10px; margin-top: -10px; border: 1px solid var(--glass-border); white-space: nowrap; }
+        #node-1 { bottom: 15%; left: 10%; } #node-2 { top: 30%; left: 30%; } #node-3 { bottom: 25%; left: 55%; } #node-4 { top: 15%; left: 60%; } #node-5 { bottom: 45%; right: 5%; width: 120px; height: 120px; border-color: var(--accent); }
+        
+        .action-btn { background: linear-gradient(135deg, var(--light-blue), var(--dark-blue)); color: #fff; border: 1px solid rgba(255,255,255,0.2); padding: 15px 35px; font-size: 1.5rem; font-family: 'Jost', sans-serif; font-weight: 700; border-radius: 30px; cursor: pointer; transition: 0.3s; box-shadow: 0 8px 20px rgba(30, 58, 138, 0.4); display: inline-flex; align-items: center; gap: 10px; justify-content: center;}
+        .action-btn:hover { transform: translateY(-5px); box-shadow: 0 12px 25px rgba(30, 58, 138, 0.6); filter: brightness(1.1); }
+        @keyframes pulseGlow { 0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(16, 185, 129, 0); } 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); } }
+        .btn-finish-level { animation: pulseGlow 1.5s infinite; background: linear-gradient(135deg, var(--success), #059669) !important; font-size: 1.6rem !important; padding: 20px 40px !important; border: 2px solid #fff !important; margin-bottom: 20px; }
+        .nav-actions { margin-top: 40px; display: none; justify-content: center; width: 100%; gap: 15px; flex-wrap: wrap;}
+        .nav-container-bottom { position: absolute; bottom: 20px; width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 0 50px; left: 0; z-index: 100; pointer-events: none; }
+        .nav-btn { pointer-events: auto; padding: 12px 30px; font-family: 'Jost', sans-serif; font-size: 1.3rem; font-weight: 700; background-color: var(--glass-card); color: var(--text-main); border: 1px solid var(--glass-border); border-radius: 30px; cursor: pointer; box-shadow: var(--glass-shadow); transition: all 0.2s ease; }
+        .nav-btn:hover { background-color: var(--light-blue); color: #fff; border-color: var(--light-blue); transform: translateY(-3px); }
+        .nav-btn:disabled { opacity: 0; pointer-events: none; }
+        
+        .quiz-container { background: var(--glass-card); padding: 25px; border-radius: 15px; margin-top: 25px; border: 1px solid var(--glass-border); box-shadow: var(--glass-shadow); }
+        .quiz-question { font-weight: 700; margin-bottom: 20px; font-size: 1.5rem; color: var(--text-main);}
+        .quiz-options { display: flex; flex-direction: column; gap: 12px; }
+        .quiz-option { background: var(--glass-bg); padding: 15px 20px; border-radius: 10px; font-size: 1.3rem; font-weight: 500; border: 1px solid var(--glass-border); cursor: pointer; transition: 0.2s; color: var(--text-main); }
+        .quiz-option:hover { border-color: var(--light-blue); transform: translateX(5px); }
+        .quiz-option.correct { background: var(--quiz-correct-bg); border-color: var(--success); color: var(--success); font-weight: 700;}
+        .quiz-option.wrong { background: var(--quiz-wrong-bg); border-color: var(--danger); color: var(--danger); font-weight: 700;}
+        
+        .quiz-result { margin-top: 15px; font-weight: 700; display: none; font-size: 1.3rem; font-family: 'Jost', sans-serif; background: var(--glass-card); border: 2px solid var(--glass-border); padding: 12px 18px; border-radius: 10px; box-shadow: var(--glass-shadow); text-align: center;}
+        
+        .progress-tracker { background: var(--glass-card); padding: 12px 20px; border-radius: 15px; text-align: center; font-weight: 800; font-size: 1.5rem; color: var(--accent); border: 2px solid var(--glass-border); margin-bottom: 20px; box-shadow: var(--glass-shadow); }
+        
+        .tf-group { display: flex; gap: 10px; }
+        .tf-btn { padding: 12px 25px; font-weight: 700; font-size: 1.4rem; border-radius: 10px; cursor: pointer; border: 2px solid transparent; transition: 0.2s; font-family: 'Jost'; }
+        .btn-mitos { background-color: var(--quiz-wrong-bg); color: var(--danger); border-color: var(--danger); }
+        .btn-fakta { background-color: var(--quiz-correct-bg); color: var(--success); border-color: var(--success); }
+        .tf-btn:hover { filter: brightness(1.1); transform: translateY(-2px); }
+        
+        .card-container { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-top: 20px; }
+        .hardware-card { width: 180px; height: 180px; perspective: 1000px; cursor: pointer; }
+        .card-inner { width: 100%; height: 100%; transition: transform 0.6s; transform-style: preserve-3d; position: relative; }
+        .hardware-card:hover .card-inner { transform: rotateY(180deg); }
+        .card-front, .card-back { width: 100%; height: 100%; position: absolute; backface-visibility: hidden; display: flex; align-items: center; justify-content: center; border-radius: 15px; font-weight: 700; font-size: 1.3rem; box-shadow: var(--glass-shadow); padding: 15px; text-align: center; }
+        .card-front { background: var(--glass-card); border: 1px solid var(--glass-border); color: var(--text-main); flex-direction: column; }
+        .card-front img { width: 110px; margin-bottom: 10px; object-fit: contain; }
+        .card-back { background: var(--light-blue); color: #fff; transform: rotateY(180deg); font-size: 1.1rem; border: 1px solid var(--glass-border); }
+        
+        .matching-container { display: flex; flex-direction: column; gap: 15px; margin-top: 20px; }
+        .matching-item { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
+        .hardware-item { padding: 15px 25px; background: var(--glass-card); border-radius: 10px; cursor: pointer; font-weight: 700; font-size: 1.3rem; transition: 0.2s; border: 2px solid var(--glass-border); width: 160px; text-align: center; color: var(--text-main); }
+        .hardware-item:hover { border-color: var(--light-blue); transform: scale(1.05); }
+        .hardware-item.selected { border-color: var(--accent); background: var(--accent); color: #fff; }
+        .hardware-item.matched { background: var(--quiz-correct-bg); border-color: var(--success); cursor: default; color: var(--success); }
+        .definition-box { padding: 15px 20px; background: var(--glass-bg); border-radius: 10px; font-size: 1.3rem; font-weight: 500; line-height: 1.5; border: 2px dashed var(--light-blue); flex: 1; cursor: pointer; transition: 0.2s; color: var(--text-main); }
+        .definition-box:hover { background: var(--glass-card); border-style: solid; }
+        .definition-box.matched { background: var(--quiz-correct-bg); border-style: solid; border-color: var(--success); cursor: default; color: var(--success);}
+        
+        .accordion { margin-top: 20px; }
+        .accordion-item { border: 2px solid var(--glass-border); border-radius: 10px; margin-bottom: 15px; overflow: hidden; background: var(--glass-card); box-shadow: var(--glass-shadow);}
+        .accordion-header { padding: 18px 20px; cursor: pointer; font-weight: 700; font-size: 1.5rem; display: flex; justify-content: space-between; transition: 0.2s; color: var(--dark-blue); border: 1px solid var(--glass-border); }
+        .accordion-header:hover { background: var(--glass-bg); }
+        .accordion-content { padding: 20px; display: none; background: var(--glass-bg); font-size: 1.4rem; font-weight: 500; line-height: 1.7; border-top: 1px solid var(--glass-border); color: var(--text-main); }
+        .accordion-content.show { display: block; }
+        
+        .timeline { margin: 25px 0; padding-left: 25px; border-left: 4px solid var(--light-blue); }
+        .timeline-item { margin-bottom: 25px; padding-left: 20px; position: relative; font-size: 1.4rem; line-height: 1.7; color: var(--text-main); font-weight: 500;}
+        .timeline-item::before { content: ''; position: absolute; left: -35px; top: 5px; width: 20px; height: 20px; background: var(--accent); border-radius: 50%; border: 4px solid var(--dark-blue); }
+        
+        .dnd-container { display: flex; gap: 20px; flex-wrap: wrap; margin-top: 20px; }
+        .inventory { flex: 1; min-width: 220px; background: var(--glass-card); padding: 20px; border-radius: 15px; border: 1px solid var(--glass-border); display: flex; flex-direction: column; gap: 15px; box-shadow: var(--glass-shadow); }
+        .draggable-item { background: var(--glass-bg); padding: 10px; border-radius: 10px; border: 1px solid var(--glass-border); cursor: grab; font-weight: 700; display: flex; align-items: center; gap: 10px; color: var(--text-main); transition: 0.2s; }
+        .draggable-item:active { cursor: grabbing; }
+        .draggable-item.dragging { opacity: 0.5; }
+        .motherboard { flex: 2; min-width: 300px; border: 2px solid var(--glass-border); border-radius: 15px; position: relative; background: #222 url('motherboard.jpg') center/100% 100% no-repeat; min-height: 450px; box-shadow: var(--glass-shadow); }
+        .drop-zone { position: absolute; background: rgba(0,0,0,0.6); border: 2px dashed rgba(255,255,255,0.8); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #FFF; font-weight: 600; font-size: 0.9rem; text-align: center; transition: all 0.3s; }
+        .drop-zone.hovered { background: rgba(245,158,11,0.6); transform: scale(1.05); border-color: var(--accent); }
+        .drop-zone.error { background: var(--quiz-wrong-bg); border-color: var(--danger); animation: shake 0.4s; }
+        .drop-zone.filled { background: transparent; border: 2px solid var(--success); }
+        #slot-cpu { bottom: 12%; right: 5%; width: 22%; height: 30%; }
+        #slot-ram { top: 2%; left: 8%; width: 43%; height: 18%; }
+        #slot-gpu { bottom: 4%; left: 5%; width: 50%; height: 38%; }
+        #slot-ssd { top: 3%; right: 4%; width: 26%; height: 25%; }
+        .drop-zone .draggable-item { width: 100%; height: 100%; margin: 0; background: transparent; border: none; padding: 0; box-shadow: none; justify-content: center;}
+        .drop-zone .draggable-item span.item-name { display: none; }
+        .drop-zone .draggable-item img { width: 80% !important; height: auto; max-height: 90%; object-fit: contain;}
+        
+        .sort-game-area { display: flex; flex-direction: column; align-items: center; background: var(--glass-card); padding: 25px; border-radius: 12px; border: 1px solid var(--glass-border); margin-bottom: 25px; transition: 0.3s; box-shadow: var(--glass-shadow);}
+        .sort-card-wrapper { perspective: 1000px; margin-bottom: 20px; }
+        .sort-card { background: var(--glass-bg); border: 3px solid var(--light-blue); border-radius: 15px; padding: 30px; min-width: 250px; text-align: center; font-size: 1.8rem; font-weight: bold; box-shadow: 0 5px 15px rgba(0,0,0,0.2); color: var(--text-main); transition: transform 0.3s ease, background-color 0.3s ease; display: flex; flex-direction: column; gap: 10px; }
+        .sort-card.error { animation: shake 0.4s; border-color: var(--danger); background-color: var(--quiz-wrong-bg); }
+        .sort-btn-group { display: flex; gap: 20px; width: 100%; justify-content: center;}
+        .sort-btn { flex: 1; max-width: 150px; padding: 15px; font-family: 'Handjet', cursive; font-weight: 800; font-size: 1.6rem; letter-spacing: 1px; border: none; border-radius: 10px; cursor: pointer; color: white; transition: 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
+        .sort-btn.input-btn { background-color: #3B82F6; }
+        .sort-btn.output-btn { background-color: #EF4444; }
+        .sort-btn:hover { transform: translateY(-3px); filter: brightness(1.1); }
+        .sort-progress { font-family: 'Handjet', cursive; font-weight: 700; font-size: 1.6rem; color: var(--text-heading); margin-bottom: 10px; letter-spacing: 1px;}
+        
+        .eval-box { background: var(--glass-card); border: 4px dashed var(--light-blue); padding: 40px; border-radius: 15px; text-align: center; margin-top: 20px; box-shadow: var(--glass-shadow);}
+        .eval-score { font-family: 'Handjet', cursive; font-weight: 800; font-size: 6rem; color: var(--success); line-height: 1; margin-bottom: 10px; text-shadow: 2px 2px 5px rgba(0,0,0,0.1); }
+        .eval-percentage { font-size: 2rem; font-weight: bold; color: var(--light-blue); margin-bottom: 20px; }
+        .eval-msg { font-size: 1.8rem; font-weight: 700; color: var(--success); font-family: 'Jost', sans-serif;}
+        
+        /* SUMMARY BOXES */
+        .summary-grid { display: flex; flex-direction: column; gap: 15px; margin-top: 25px; }
+        .summary-box { background: var(--glass-card); border-left: 6px solid var(--accent); padding: 20px; border-radius: 10px; box-shadow: var(--glass-shadow); border-top: 1px solid var(--glass-border); border-right: 1px solid var(--glass-border); border-bottom: 1px solid var(--glass-border); }
+        .summary-box h3 { margin-bottom: 8px; color: var(--dark-blue); font-size: 1.6rem; font-weight: 700;}
+        .summary-box p { margin: 0; font-size: 1.4rem; }
+
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25%, 75% { transform: translateX(-5px); } 50% { transform: translateX(5px); } }
+        ::-webkit-scrollbar { width: 10px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.4); border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.2); backdrop-filter: blur(5px); }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.6); }
+        body.dark-theme ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); }
+    </style>
+</head>
+<body>
+
+    <audio id="bgMusic" loop>
+        <source src="bgmusic.mp3" type="audio/mpeg">
+    </audio>
+
+    <div class="global-bg" id="main-bg"></div>
+    <div id="global-ornaments"></div>
+    
+    <img src="mascot-hello.png" id="global-mascot" class="mascot m-hidden" alt="Maskot Grey">
+    <div id="mascot-bubble" class="speech-bubble m-hidden"></div>
+
+    <div class="app-top-bar">
+        <div class="top-left-status">
+            <div class="life-container" id="life-container">
+                <span id="hearts">❤️❤️❤️</span>
+            </div>
+            <div class="xp-wrapper" id="xp-wrapper">
+                <div class="xp-text" id="xp-text">0 XP</div>
+                <div class="xp-container">
+                    <div class="xp-fill" id="xp-fill"></div>
+                </div>
+            </div>
+        </div>
+        <div class="controls-group">
+            <button class="app-btn" id="btn-home" onclick="goToPage('page-cover')">
+                <img src="home.png" alt="Home"> Home
+            </button>
+            <button class="app-btn" id="btn-map" onclick="goToPage('page-map')">
+                <img src="map.png" alt="Map"> Map
+            </button>
+            <button class="app-btn" id="btn-music" onclick="toggleMusic()">
+                <img src="music.png" alt="Music" id="icon-music"> Music: ON
+            </button>
+            <button class="app-btn theme-btn" onclick="toggleTheme()">
+                <img src="dark.png" alt="Dark Mode" id="icon-theme"> Dark Mode
+            </button>
+        </div>
+    </div>
+
+    <div class="app-container">
+        
+        <div class="page active" id="page-cover">
+            <div class="cover-content">
+                <span class="badge">Interactive E-Book</span>
+                <h1 style="margin-top: 15px; font-size: 5.5rem;">INFORMATIKA</h1>
+                <h2 style="font-size: 2.5rem; text-transform: uppercase;">Perangkat Keras Komputer</h2>
+                <p style="color: var(--text-main); font-weight: 600; font-size: 1.5rem; margin-top: 20px;">Kelas VII SMP Labschool Jakarta</p>
+                <p class="quote-text">"Upgrade your knowledge before you upgrade your setup."</p>
+                <button class="action-btn" style="margin-top: 35px;" onclick="goToPage('page-story')">MULAI PETUALANGAN</button>
+            </div>
+            <div class="author-centered">Dibuat oleh: Varden Yehezkiel</div>
+            <img src="mascot-hello.png" class="cover-mascot" alt="Grey the Astronaut">
+        </div>
+
+        <div class="page" id="page-story">
+            <h2 style="text-align: center; width: 100%;">Misi Penyelamatan <strong>Grey</strong>!</h2>
+            
+            <div style="text-align: center; margin-bottom: 20px;">
+                <img src="mascot-boss.png" alt="Grey Large" style="width: 220px; filter: drop-shadow(0 15px 25px rgba(0,0,0,0.4)); animation: floatMascot 4s ease-in-out infinite;">
+            </div>
+
+            <p style="text-align: center;">Halo! Kenalkan, ini <strong>Grey</strong>. Ia adalah seekor kucing astronaut yang sedang menjelajahi Galaksi Teknologi. Namun, pesawatnya kehabisan daya dan ia harus mengumpulkan energi perangkat keras agar bisa kembali ke <strong>Home Planet</strong>.</p>
+            <p style="text-align: center;">Maukah kamu membantu <strong>Grey</strong>? Caranya sangat mudah! Kamu hanya perlu menyelesaikan tantangan pembelajaran di setiap planet materi yang ada di Peta Misi.</p>
+            
+            <div class="tutorial-grid">
+                <div class="tut-box">
+                    <div style="font-size: 2.5rem; line-height: 1; min-width: 45px; text-align: center;">❤️</div>
+                    <div class="tut-text">
+                        <h3>Sistem Nyawa</h3>
+                        <p>Kamu memiliki 3 nyawa di setiap level. Hati-hati, jika kamu salah menjawab, nyawamu akan berkurang! Jika habis, kamu harus membaca ulang materi.</p>
+                    </div>
+                </div>
+                <div class="tut-box">
+                    <div style="font-size: 2.5rem; font-weight: 800; color: var(--success); line-height: 1; min-width: 45px; text-align: center; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">XP</div>
+                    <div class="tut-text">
+                        <h3>Sistem XP</h3>
+                        <p>Setiap jawaban yang benar akan langsung memberimu XP (Experience Points). Kumpulkan XP sebanyak-banyaknya untuk mendapat gelar Master Hardware!</p>
+                    </div>
+                </div>
+                <div class="tut-box">
+                    <img src="map.png" alt="Map Nav" style="width: 45px; height: 45px; object-fit: contain;">
+                    <div class="tut-text">
+                        <h3>Bar Navigasi</h3>
+                        <p>Gunakan tombol navigasi di sudut kanan atas untuk melihat Peta Misi, menyalakan musik, atau mengubah tema ke Mode Gelap.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="nav-actions" style="display: flex; margin-top: 40px;">
+                <button class="action-btn btn-finish-level" onclick="goToPage('page-map')">🚀 BANTU <strong>GREY</strong> SEKARANG!</button>
+            </div>
+        </div>
+
+        <div class="page" id="page-map">
+            <h1 style="font-size: 3rem; margin-bottom: 5px;">Peta Misi</h1>
+            <p style="font-size: 1.6rem; text-align: center; font-weight: 600; margin-bottom: 25px; color: var(--text-heading);">Pilih planet untuk mulai mengumpulkan Energi ⚡. Selesaikan ujiannya untuk membuka rute berikutnya!</p>
+            <div class="map-area">
+                <div class="map-node node-unlocked" id="node-1" onclick="startLevel(1, 'page-lvl1-materi')">
+                    <img src="node1.png" alt="Hardware" class="node-image" id="icon-node-1">
+                    <div class="node-label">Planet Hardware</div>
+                </div>
+                <div class="map-node locked" id="node-2" onclick="startLevel(2, 'page-lvl2-materi')">
+                    <img src="node2.png" alt="Internal" class="node-image" id="icon-node-2">
+                    <div class="node-label">Planet Internal</div>
+                </div>
+                <div class="map-node locked" id="node-3" onclick="startLevel(3, 'page-lvl3-materi')">
+                    <img src="node3.png" alt="I/O" class="node-image" id="icon-node-3">
+                    <div class="node-label">Planet I/O</div>
+                </div>
+                <div class="map-node locked" id="node-4" onclick="startLevel(4, 'page-lvl4-materi')">
+                    <img src="node4.png" alt="Storage" class="node-image" id="icon-node-4">
+                    <div class="node-label">Planet Storage</div>
+                </div>
+                <div class="map-node locked" id="node-5" onclick="startLevel(5, 'page-lvl5-game')">
+                    <img src="node5.png" alt="Home Planet" class="node-image" id="icon-node-5" style="width: 100px; height: 100px;">
+                    <div class="node-label">Final Stop</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="page" id="page-lvl1-materi">
+            <h2>Planet Hardware: Apa itu Hardware?</h2>
+            <p>Pernahkah kamu bermain game dengan grafis yang sangat bagus? 🎮 Spesifikasi fisik untuk menjalankan game tersebut disebut <strong>Hardware</strong>. Singkatnya, semua komponen fisik komputer yang wujudnya bisa disentuh secara nyata adalah hardware.</p>
+            
+            <div class="placeholder-image">
+                <span class="placeholder-text">[ Tempat Ilustrasi Materi ]</span>
+                <img src="ilustrasi1.jpg" alt="Ilustrasi Hardware" onerror="this.style.display='none'">
+            </div>
+
+            <div class="note">Bayangkan kamu lagi asyik bermain bersama, tapi tiba-tiba komputer melambat. Hal ini sering terjadi karena spesifikasi hardware yang kurang mumpuni! 💡</div>
+            <p>Secara umum, hardware terbagi menjadi dua kategori utama:</p>
+            <ul style="margin-left: 30px;">
+                <li style="margin-bottom: 10px;"><strong>Internal Hardware:</strong> Komponen utama yang bersembunyi di dalam <em>casing</em> komputer (Contoh: CPU, RAM, Motherboard).</li>
+                <li><strong>External Hardware / Periferal:</strong> Perangkat tambahan yang dicolokkan dari luar casing (Contoh: Mouse, Monitor, Printer).</li>
+            </ul>
+        </div>
+
+        <div class="page" id="page-lvl1-quiz">
+            <h2>Mini Challenge 1 🎯</h2>
+            <p>Selesaikan ke-6 pertanyaan di bawah ini untuk membuka akses ke level selanjutnya!</p>
+            <div class="progress-tracker" id="progress-text-lvl1">Progress Selesai: 0 / 6</div>
+
+            <div class="quiz-container" data-answered="false">
+                <div class="quiz-question">1. Menurutmu, apa definisi paling tepat untuk hardware komputer?</div>
+                <div class="quiz-options">
+                    <div class="quiz-option" onclick="checkAnswerWithLife(this, false, 'res-b1-1', 1)">A. Akun dan password di internet.</div>
+                    <div class="quiz-option" onclick="checkAnswerWithLife(this, true, 'res-b1-1', 1)">B. Komponen fisik komputer yang wujudnya bisa disentuh nyata.</div>
+                    <div class="quiz-option" onclick="checkAnswerWithLife(this, false, 'res-b1-1', 1)">C. Kumpulan aplikasi atau game yang di-install.</div>
+                </div>
+                <div id="res-b1-1" class="quiz-result"></div>
+            </div>
+
+            <div class="quiz-container" data-answered="false">
+                <div class="quiz-question">2. Jika kamu sedang bermain game lalu komputer melambat (lag) karena spesifikasi rendah, yang butuh diperbarui adalah...</div>
+                <div class="quiz-options">
+                    <div class="quiz-option" onclick="checkAnswerWithLife(this, false, 'res-b1-2', 1)">A. Perangkat lunak (Software)</div>
+                    <div class="quiz-option" onclick="checkAnswerWithLife(this, true, 'res-b1-2', 1)">B. Perangkat keras (Hardware)</div>
+                    <div class="quiz-option" onclick="checkAnswerWithLife(this, false, 'res-b1-2', 1)">C. Kursi gaming</div>
+                </div>
+                <div id="res-b1-2" class="quiz-result"></div>
+            </div>
+
+            <div class="quiz-container" data-answered="false">
+                <div class="quiz-question">3. Keyboard, Mouse, dan Monitor dicolokkan dari luar casing komputer. Ketiganya masuk ke kategori apa?</div>
+                <div class="quiz-options">
+                    <div class="quiz-option" onclick="checkAnswerWithLife(this, false, 'res-b1-3', 1)">A. Internal Hardware</div>
+                    <div class="quiz-option" onclick="checkAnswerWithLife(this, false, 'res-b1-3', 1)">B. Brainware</div>
+                    <div class="quiz-option" onclick="checkAnswerWithLife(this, true, 'res-b1-3', 1)">C. External Hardware / Periferal</div>
+                </div>
+                <div id="res-b1-3" class="quiz-result"></div>
+            </div>
+
+            <div class="quiz-container" data-answered="false">
+                <div class="quiz-question">4. "Software aplikasi sekeren apapun nggak akan bisa jalan kalau hardware komputer kita rusak mati total."</div>
+                <div class="tf-group">
+                    <button class="tf-btn btn-mitos" onclick="checkTF(this, false, 'tf-b1-4', '', 1)">Mitos</button>
+                    <button class="tf-btn btn-fakta" onclick="checkTF(this, true, 'tf-b1-4', 'Fakta! Hardware adalah pondasi utama.', 1)">Fakta</button>
+                </div>
+                <div id="tf-b1-4" class="quiz-result"></div>
+            </div>
+
+            <div class="quiz-container" data-answered="false">
+                <div class="quiz-question">5. "Komponen CPU dan RAM sengaja diletakkan di luar casing biar nggak kepanasan."</div>
+                <div class="tf-group">
+                    <button class="tf-btn btn-mitos" onclick="checkTF(this, true, 'tf-b1-5', 'Mitos! CPU dan RAM itu komponen internal di dalam casing.', 1)">Mitos</button>
+                    <button class="tf-btn btn-fakta" onclick="checkTF(this, false, 'tf-b1-5', '', 1)">Fakta</button>
+                </div>
+                <div id="tf-b1-5" class="quiz-result"></div>
+            </div>
+
+            <div class="quiz-container" data-answered="false">
+                <div class="quiz-question">6. Jika perangkat keras (hardware) adalah tubuh fisik komputer, maka sistem operasi seperti Windows berperan sebagai apa?</div>
+                <div class="quiz-options">
+                    <div class="quiz-option" onclick="checkAnswerWithLife(this, true, 'res-b1-6', 1)">A. Perangkat Lunak (Software)</div>
+                    <div class="quiz-option" onclick="checkAnswerWithLife(this, false, 'res-b1-6', 1)">B. Perangkat Keras (Hardware) juga</div>
+                    <div class="quiz-option" onclick="checkAnswerWithLife(this, false, 'res-b1-6', 1)">C. Brainware (Pengguna)</div>
+                </div>
+                <div id="res-b1-6" class="quiz-result"></div>
+            </div>
+
+            <div class="nav-actions" id="btn-finish-lvl1">
+                <button class="action-btn btn-finish-level" onclick="completeLevel(1)">🌟 SELESAIKAN MISI</button>
+            </div>
+        </div>
+
+        <div class="page" id="page-lvl2-materi">
+            <h2>Planet Internal: Mesin Inti</h2>
+            <p>Sama seperti tubuh manusia yang punya otak dan jantung, komputer juga punya "organ dalam". Arahkan kursor (atau sentuh) kotak di bawah ini untuk melihat tugas mereka!</p>
+            <div class="card-container">
+                <div class="hardware-card"><div class="card-inner">
+                    <div class="card-front"><img src="cpu.png" alt="CPU">CPU</div>
+                    <div class="card-back">Sang Pengatur. Otak komputer pemroses instruksi.</div>
+                </div></div>
+                <div class="hardware-card"><div class="card-inner">
+                    <div class="card-front"><img src="ram.png" alt="RAM">RAM</div>
+                    <div class="card-back">Ruang kerja sementara untuk multitasking.</div>
+                </div></div>
+                <div class="hardware-card"><div class="card-inner">
+                    <div class="card-front"><img src="gpu.png" alt="GPU">GPU / VGA</div>
+                    <div class="card-back">Pahlawan visual. Memproses grafis jernih.</div>
+                </div></div>
+                <div class="hardware-card"><div class="card-inner">
+                    <div class="card-front"><img src="motherboard.jpg" alt="Motherboard" style="border-radius: 5px;">Motherboard</div>
+                    <div class="card-back">Papan sirkuit tempat semua komponen terhubung.</div>
+                </div></div>
+                <div class="hardware-card"><div class="card-inner">
+                    <div class="card-front"><img src="psu.png" alt="PSU" style="border-radius: 5px;">Power Supply</div>
+                    <div class="card-back">Pemasok daya energi listrik utama ke komponen.</div>
+                </div></div>
+                <div class="hardware-card"><div class="card-inner">
+                    <div class="card-front"><img src="fan.png" alt="Fan" style="border-radius: 5px;">Kipas/Heatsink</div>
+                    <div class="card-back">Pendingin agar mesin inti tidak kepanasan.</div>
+                </div></div>
+            </div>
+            <div class="note">Fakta Menarik: Memiliki prosesor cepat tetapi kapasitas memori RAM kecil akan menahan performa maksimal (disebut Bottleneck).</div>
+        </div>
+
+        <div class="page" id="page-lvl2-quiz">
+            <h2>Mini Challenge 2 🎯</h2>
+            <p>Pasangkan ke-6 komponen internal di bawah ini dengan definisi tugasnya masing-masing secara benar!</p>
+
+            <div class="progress-tracker" id="progress-text-lvl2">Progress Selesai: 0 / 6</div>
+
+            <div class="matching-container" style="margin-bottom: 30px;">
+                <div class="matching-item">
+                    <div class="hardware-item" id="hw-cpu" onclick="selectHardware(this, 'cpu')">CPU (Prosesor)</div><span style="font-size: 1.5rem; font-weight: bold; color: var(--text-heading);">→</span>
+                    <div class="definition-box" id="def-fan" onclick="selectDefinition(this, 'fan')">Pendingin agar mesin tidak kepanasan (*overheat*)</div>
+                </div>
+                <div class="matching-item">
+                    <div class="hardware-item" id="hw-ram" onclick="selectHardware(this, 'ram')">RAM</div><span style="font-size: 1.5rem; font-weight: bold; color: var(--text-heading);">→</span>
+                    <div class="definition-box" id="def-gpu" onclick="selectDefinition(this, 'gpu')">Pemroses visual dan grafis layar</div>
+                </div>
+                <div class="matching-item">
+                    <div class="hardware-item" id="hw-gpu" onclick="selectHardware(this, 'gpu')">GPU / VGA</div><span style="font-size: 1.5rem; font-weight: bold; color: var(--text-heading);">→</span>
+                    <div class="definition-box" id="def-mobi" onclick="selectDefinition(this, 'mobi')">Papan sirkuit tempat berkumpulnya semua komponen</div>
+                </div>
+                <div class="matching-item">
+                    <div class="hardware-item" id="hw-mobi" onclick="selectHardware(this, 'mobi')">Motherboard</div><span style="font-size: 1.5rem; font-weight: bold; color: var(--text-heading);">→</span>
+                    <div class="definition-box" id="def-psu" onclick="selectDefinition(this, 'psu')">Pemasok aliran energi listrik utama</div>
+                </div>
+                <div class="matching-item">
+                    <div class="hardware-item" id="hw-psu" onclick="selectHardware(this, 'psu')">Power Supply</div><span style="font-size: 1.5rem; font-weight: bold; color: var(--text-heading);">→</span>
+                    <div class="definition-box" id="def-ram" onclick="selectDefinition(this, 'ram')">Ruang kerja sementara untuk <em>multitasking</em></div>
+                </div>
+                <div class="matching-item">
+                    <div class="hardware-item" id="hw-fan" onclick="selectHardware(this, 'fan')">Kipas / Heatsink</div><span style="font-size: 1.5rem; font-weight: bold; color: var(--text-heading);">→</span>
+                    <div class="definition-box" id="def-cpu" onclick="selectDefinition(this, 'cpu')">Pengatur dan otak utama komputer</div>
+                </div>
+            </div>
+            
+            <div id="matching-result" class="quiz-result"></div>
+
+            <div class="nav-actions" id="btn-finish-lvl2">
+                <button class="action-btn btn-finish-level" onclick="completeLevel(2)">🌟 SELESAIKAN MISI</button>
+            </div>
+        </div>
+
+        <div class="page" id="page-lvl3-materi">
+            <h2>Planet I/O: Input & Output</h2>
+            <p>Perangkat <strong>Input</strong> digunakan untuk memasukkan perintah ke dalam sistem, sedangkan <strong>Output</strong> menampilkan hasil dari perintah tersebut.</p>
+            
+            <div class="placeholder-image">
+                <span class="placeholder-text">[ Tempat Ilustrasi Materi ]</span>
+                <img src="ilustrasi3.jpg" alt="Ilustrasi Input Output" onerror="this.style.display='none'">
+            </div>
+
+            <h3 style="color: var(--dark-blue); margin-top: 25px; font-size: 1.4rem;">🖱️ Input (Pemberi Perintah)</h3>
+            <div class="timeline">
+                <div class="timeline-item"><strong>Keyboard</strong>: Alat utama untuk mengetik teks dan pintasan (<em>shortcut</em>).</div>
+                <div class="timeline-item"><strong>Mouse</strong>: Mengarahkan kursor dan mengklik objek di layar dengan akurasi tinggi.</div>
+                <div class="timeline-item"><strong>Microphone</strong>: Memasukkan data berupa audio atau suara ke dalam sistem komputer.</div>
+                <div class="timeline-item"><strong>Webcam</strong>: Memasukkan gambar visual bergerak, biasanya untuk <em>video call</em>.</div>
+                <div class="timeline-item"><strong>Scanner</strong>: Alat untuk memindai dokumen fisik (kertas) menjadi *file* digital di dalam komputer.</div>
+                <div class="timeline-item"><strong>Gamepad/Joystick</strong>: Perangkat kendali interaktif yang dikhususkan untuk bermain *game*.</div>
+            </div>
+            
+            <h3 style="color: var(--dark-blue); margin-top: 25px; font-size: 1.4rem;">🖥️ Output (Penampil Hasil)</h3>
+            <div class="timeline">
+                <div class="timeline-item"><strong>Monitor</strong>: Layar penampil visual utama dari hasil pemrosesan grafis komputer.</div>
+                <div class="timeline-item"><strong>Speaker & Headset</strong>: Mengeluarkan hasil pemrosesan berupa audio atau suara yang bisa didengar.</div>
+                <div class="timeline-item"><strong>Printer</strong>: Mengeluarkan hasil data digital (dokumen/foto) menjadi bentuk cetak fisik di atas kertas.</div>
+                <div class="timeline-item"><strong>Proyektor</strong>: Alat untuk memancarkan tampilan layar komputer ke dinding atau bidang datar berukuran besar.</div>
+            </div>
+        </div>
+
+        <div class="page" id="page-lvl3-quiz">
+            <h2>Mini Challenge 3 🎯</h2>
+            <p>Selesaikan 8 misi cepat ini! Klasifikasikan perangkat di bawah menjadi Input atau Output!</p>
+            
+            <div class="progress-tracker" id="progress-text-lvl3">Progress Selesai: 0 / 8</div>
+
+            <div class="sort-game-area" id="sort-game-area">
+                <div class="sort-progress" id="sort-progress">Perangkat 1 dari 8</div>
+                <div class="sort-card-wrapper">
+                    <div class="sort-card" id="sort-card-content">
+                    </div>
+                </div>
+                <div class="sort-btn-group">
+                    <button class="sort-btn input-btn" onclick="checkSort('input')">📥 INPUT</button>
+                    <button class="sort-btn output-btn" onclick="checkSort('output')">📤 OUTPUT</button>
+                </div>
+            </div>
+            
+            <div id="sort-success" class="quiz-result">
+                🎉 Luar biasa! Kamu berhasil mengklasifikasikan semua perangkat!
+            </div>
+            
+            <div class="nav-actions" id="btn-finish-lvl3">
+                <button class="action-btn btn-finish-level" onclick="completeLevel(3)">🌟 SELESAIKAN MISI</button>
+            </div>
+        </div>
+
+        <div class="page" id="page-lvl4-materi">
+            <h2>Planet Storage: Penyimpanan</h2>
+            <p>Di mana semua dokumen, foto, dan aplikasi sekolahmu disimpan saat komputer dimatikan? Semuanya ada di media penyimpanan!</p>
+            
+            <div class="placeholder-image">
+                <span class="placeholder-text">[ Tempat Ilustrasi Materi ]</span>
+                <img src="ilustrasi4.jpg" alt="Ilustrasi Penyimpanan" onerror="this.style.display='none'">
+            </div>
+
+            <div class="accordion">
+                <div class="accordion-item">
+                    <div class="accordion-header" onclick="toggleAccordion(this)"><span>💿 HDD (Hard Disk Drive)</span><span>▼</span></div>
+                    <div class="accordion-content"><p style="margin-bottom: 0;">Teknologi menggunakan piringan magnetik yang berputar cepat di dalamnya.<br><br><strong>Kelebihan:</strong> Menawarkan kapasitas penyimpanan yang sangat besar dengan harga yang bersahabat.<br><strong>Kekurangan:</strong> Proses membaca dan menulis data cukup lambat, ukurannya tebal, dan rawan rusak jika komputernya terjatuh/terbentur.</p></div>
+                </div>
+                <div class="accordion-item">
+                    <div class="accordion-header" onclick="toggleAccordion(this)"><span>⚡ SSD (Solid State Drive)</span><span>▼</span></div>
+                    <div class="accordion-content"><p style="margin-bottom: 0;">Teknologi modern yang menggunakan memori *chip* (tanpa komponen bergerak mekanis). Tersedia dalam bentuk SATA maupun NVMe yang sekecil permen karet!<br><br><strong>Kelebihan:</strong> Kecepatan baca/tulis data luar biasa cepat. *Booting* (menyalakan PC) hanya butuh hitungan detik. Lebih tahan banting.<br><strong>Kekurangan:</strong> Harga relatif jauh lebih mahal per Gigabyte-nya dibanding HDD.</p></div>
+                </div>
+                <div class="accordion-item">
+                    <div class="accordion-header" onclick="toggleAccordion(this)"><span>💾 Flashdisk & SD Card</span><span>▼</span></div>
+                    <div class="accordion-content"><p style="margin-bottom: 0;">Media penyimpanan portabel yang ukurannya sangat kecil dan praktis untuk dibawa ke mana-mana. Biasanya Flashdisk dicolokkan ke *port* USB di PC, sedangkan SD Card digunakan di *smartphone* atau kamera digital.</p></div>
+                </div>
+                <div class="accordion-item">
+                    <div class="accordion-header" onclick="toggleAccordion(this)"><span>☁️ Cloud Storage</span><span>▼</span></div>
+                    <div class="accordion-content"><p style="margin-bottom: 0;">Penyimpanan super modern yang berbasis internet (seperti Google Drive atau OneDrive). Datamu disimpan di *server* raksasa milik perusahaan secara *online*.<br><br>Membutuhkan koneksi internet untuk mengaksesnya, namun *file* sangat aman dan tidak akan memakan ruang memori fisik di komputer kamu sendiri!</p></div>
+                </div>
+            </div>
+            <div class="note">Tips Cerdas: Kombinasikan SSD untuk meng-install Sistem Operasi (agar komputermu gesit), lalu gunakan HDD raksasa untuk menampung seluruh file videomu! ✨</div>
+        </div>
+
+        <div class="page" id="page-lvl4-quiz">
+            <h2>Mini Challenge 4 🎯</h2>
+            <p>Selesaikan ke-6 pertanyaan di bawah ini untuk membuka akses ke misi terakhir!</p>
+
+            <div class="progress-tracker" id="progress-text-lvl4">Progress Selesai: 0 / 6</div>
+
+            <div class="quiz-container" data-answered="false">
+                <div class="quiz-question">1. Tempat dimana game belasan Gigabyte ditampung permanen (bahkan saat PC mati) disebut?</div>
+                <div class="quiz-options">
+                    <div class="quiz-option" onclick="checkAnswerWithLife(this, false, 'res-b4-1', 4)">A. RAM (Memori Sementara)</div>
+                    <div class="quiz-option" onclick="checkAnswerWithLife(this, true, 'res-b4-1', 4)">B. Storage (Penyimpanan)</div>
+                    <div class="quiz-option" onclick="checkAnswerWithLife(this, false, 'res-b4-1', 4)">C. CPU (Prosesor)</div>
+                </div>
+                <div id="res-b4-1" class="quiz-result"></div>
+            </div>
+
+            <div class="quiz-container" data-answered="false">
+                <div class="quiz-question">2. Ingin komputer menyala secepat kilat pas tombol power ditekan? Install Windows-nya di...</div>
+                <div class="quiz-options">
+                    <div class="quiz-option" onclick="checkAnswerWithLife(this, false, 'res-b4-2', 4)">A. HDD</div>
+                    <div class="quiz-option" onclick="checkAnswerWithLife(this, true, 'res-b4-2', 4)">B. SSD</div>
+                    <div class="quiz-option" onclick="checkAnswerWithLife(this, false, 'res-b4-2', 4)">C. Motherboard</div>
+                </div>
+                <div id="res-b4-2" class="quiz-result"></div>
+            </div>
+
+            <div class="quiz-container" data-answered="false">
+                <div class="quiz-question">3. Alasan HDD masih disukai buat menyimpan video yang ukurannya sangat besar adalah...</div>
+                <div class="quiz-options">
+                    <div class="quiz-option" onclick="checkAnswerWithLife(this, false, 'res-b4-3', 4)">A. Karena speed-nya paling cepat.</div>
+                    <div class="quiz-option" onclick="checkAnswerWithLife(this, true, 'res-b4-3', 4)">B. Harganya sangat bersahabat untuk kapasitas super besar.</div>
+                    <div class="quiz-option" onclick="checkAnswerWithLife(this, false, 'res-b4-3', 4)">C. Bentuknya lebih estetik.</div>
+                </div>
+                <div id="res-b4-3" class="quiz-result"></div>
+            </div>
+
+            <div class="quiz-container" data-answered="false">
+                <div class="quiz-question">4. "SSD itu membaca data lebih lambat karena ia memakai piringan kaset yang berputar di dalamnya."</div>
+                <div class="tf-group">
+                    <button class="tf-btn btn-mitos" onclick="checkTF(this, true, 'tf-b4-4', 'Mitos! SSD pakai chip modern, makanya sangat cepat.', 4)">Mitos</button>
+                    <button class="tf-btn btn-fakta" onclick="checkTF(this, false, 'tf-b4-4', '', 4)">Fakta</button>
+                </div>
+                <div id="tf-b4-4" class="quiz-result"></div>
+            </div>
+
+            <div class="quiz-container" data-answered="false">
+                <div class="quiz-question">5. "Google Drive adalah contoh penyimpanan Cloud yang tidak memakan memori fisik di komputermu."</div>
+                <div class="tf-group">
+                    <button class="tf-btn btn-mitos" onclick="checkTF(this, false, 'tf-b4-5', '', 4)">Mitos</button>
+                    <button class="tf-btn btn-fakta" onclick="checkTF(this, true, 'tf-b4-5', 'Fakta Valid! Itu adalah kekuatan Cloud Storage.', 4)">Fakta</button>
+                </div>
+                <div id="tf-b4-5" class="quiz-result"></div>
+            </div>
+
+            <div class="quiz-container" data-answered="false">
+                <div class="quiz-question">6. Jika komputermu mati listrik mendadak sebelum sempat menekan tombol simpan, datanya akan hilang karena tugas tersebut masih berada di...</div>
+                <div class="quiz-options">
+                    <div class="quiz-option" onclick="checkAnswerWithLife(this, false, 'res-b4-6', 4)">A. SSD</div>
+                    <div class="quiz-option" onclick="checkAnswerWithLife(this, false, 'res-b4-6', 4)">B. Flashdisk</div>
+                    <div class="quiz-option" onclick="checkAnswerWithLife(this, true, 'res-b4-6', 4)">C. RAM (Memori Sementara)</div>
+                </div>
+                <div id="res-b4-6" class="quiz-result"></div>
+            </div>
+
+            <div class="nav-actions" id="btn-finish-lvl4">
+                <button class="action-btn btn-finish-level" onclick="completeLevel(4)">🌟 MENUJU FINAL STOP</button>
+            </div>
+        </div>
+
+        <div class="page" id="page-lvl5-game">
+            <h2>Final Stop: PC Builder 🛠️</h2>
+            <p>Ujian terakhir! Tarik komponen dari Rak dan letakkan ke slot Motherboard yang tepat untuk menyalakan pesawat <strong>Grey</strong>!</p>
+            
+            <div class="dnd-container">
+               <div class="inventory">
+                    <h3 style="color:var(--text-heading); text-align: center;">Rak Komponen 📦</h3>
+                    <div class="draggable-item" draggable="true" id="item-cpu" data-id="cpu" style="justify-content: center; padding: 15px;">
+                        <img src="cpu.png" alt="" style="width: 80px; height: 80px; object-fit: contain; pointer-events: none;">
+                    </div>
+                    <div class="draggable-item" draggable="true" id="item-ram" data-id="ram" style="justify-content: center; padding: 15px;">
+                        <img src="ram.png" alt="" style="width: 80px; height: 80px; object-fit: contain; pointer-events: none;">
+                    </div>
+                    <div class="draggable-item" draggable="true" id="item-gpu" data-id="gpu" style="justify-content: center; padding: 15px;">
+                        <img src="gpu.png" alt="" style="width: 80px; height: 80px; object-fit: contain; pointer-events: none;">
+                    </div>
+                    <div class="draggable-item" draggable="true" id="item-ssd" data-id="ssd" style="justify-content: center; padding: 15px;">
+                        <img src="ssd.png" alt="" style="width: 80px; height: 80px; object-fit: contain; pointer-events: none;">
+                    </div>
+                </div>
+                <div class="motherboard">
+                    <div class="drop-zone" id="slot-cpu" data-accept="cpu"><span class="label">CPU Socket</span></div>
+                    <div class="drop-zone" id="slot-ram" data-accept="ram"><span class="label">RAM Slot</span></div>
+                    <div class="drop-zone" id="slot-gpu" data-accept="gpu"><span class="label">GPU Slot</span></div>
+                    <div class="drop-zone" id="slot-ssd" data-accept="ssd"><span class="label">SSD Port</span></div>
+                </div>
+            </div>
+
+            <div id="dnd-success" style="display:none; text-align:center; margin-top:30px; background: var(--glass-card); padding:20px; border-radius: 15px; border: 2px solid var(--success);">
+                <h2 style="color:var(--success); border:none;">🎉 ENERGI PENUH! PC Berhasil Menyala!</h2>
+                <div class="nav-actions" id="btn-finish-lvl5" style="margin-top:20px;">
+                    <button class="action-btn btn-finish-level" onclick="completeLevel(5)">🌟 LANJUT KE RANGKUMAN</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="page" id="page-12">
+            <h1 style="font-size: 4.5rem; text-align: center; margin-bottom: 10px; color: var(--text-heading);">Misi Berhasil! 🎉</h1>
+            <p style="text-align: center; font-size: 1.8rem; font-weight: 600; color: var(--text-main); margin-bottom: 30px;">Selamat! <strong>Grey</strong> telah sampai di Home Planet dengan selamat berkat bantuanmu! 🚀🐾</p>
+            
+            <div class="summary-grid">
+                <div class="summary-box">
+                    <h3>1. Mesin Inti Internal</h3>
+                    <p>Komponen otak yang bekerja di dalam casing, seperti CPU (pemroses utama), RAM (memori sementara), GPU (grafis), dan Motherboard (papan penghubung).</p>
+                </div>
+                <div class="summary-box">
+                    <h3>2. Perangkat Input & Output</h3>
+                    <p>Alat Input (Mouse, Keyboard, Scanner) untuk memberikan perintah digital. Alat Output (Monitor, Speaker, Proyektor) untuk menampilkan hasil pemrosesan.</p>
+                </div>
+                <div class="summary-box">
+                    <h3>3. Penyimpanan (Storage)</h3>
+                    <p>Media simpan data permanen. HDD (kapasitas besar & murah), SSD (kecepatan sistem super tinggi), dan Cloud Storage (penyimpanan modern berbasis server internet).</p>
+                </div>
+            </div>
+            
+            <div class="nav-actions" style="display: flex; margin-top: 35px;">
+                <button class="action-btn btn-finish-level" onclick="goToPage('page-evaluation')">🏆 LIHAT SKOR AKHIR</button>
+            </div>
+        </div>
+
+        <div class="page" id="page-evaluation" style="align-items: center; justify-content: center; text-align: center;">
+            <h1 style="font-size: 5rem;">Misi Selesai!</h1>
+            <div style="background: var(--glass-card); border: 1px solid var(--glass-border); padding: 40px; border-radius: 20px; margin-top: 20px; box-shadow: var(--glass-shadow);">
+                <h2 style="border:none; margin-bottom: 10px;">Total XP Kamu:</h2>
+                <div id="final-score" class="eval-score">0 XP</div>
+                <p id="final-message" class="eval-msg">Menghitung...</p>
+            </div>
+            <p style="text-align: center; margin-top: 30px; font-size: 1.3rem; font-weight: 600;">*Catatan: XP penuh hanya didapatkan jika berhasil menjawab benar pada kesempatan pertama.</p>
+            
+            <div class="nav-actions" style="display: flex; gap: 15px; margin-top: 30px;">
+                <button class="action-btn" onclick="goToPage('page-map')" style="font-size: 1.1rem; padding: 12px 25px;">
+                    <img src="map.png" alt="" style="width:18px;"> KEMBALI KE MAP
+                </button>
+                <button class="action-btn" onclick="location.reload()" style="font-size: 1.1rem; padding: 12px 25px; background: linear-gradient(135deg, var(--danger), #be123c);">
+                    <img src="home.png" alt="" style="width:18px;"> MAIN LAGI
+                </button>
+            </div>
+        </div>
+
+        <div class="nav-container-bottom" id="nav-container-bottom">
+            <button class="nav-btn btn" id="prevBtn" onclick="navigate(-1)" disabled>&#8592; Kembali</button>
+            <button class="nav-btn btn" id="nextBtn" onclick="navigate(1)">Lanjut &#8594;</button>
+        </div>
+
+    </div>
+
+    <script>
+        let musicStarted = false;
+        let isMusicMuted = false;
+        const bgMusic = document.getElementById('bgMusic');
+        bgMusic.volume = 0.15; 
+
+        function toggleMusic() {
+            const musicBtn = document.getElementById('btn-music');
+            if (bgMusic.paused) {
+                bgMusic.play();
+                isMusicMuted = false;
+                musicBtn.innerHTML = '<img src="music.png" alt="Music" id="icon-music"> Music: ON';
+            } else {
+                bgMusic.pause();
+                isMusicMuted = true;
+                musicBtn.innerHTML = '<img src="mute.png" alt="Music" id="icon-music"> Music: OFF';
+            }
+            musicStarted = true;
+        }
+
+        document.body.addEventListener('click', () => {
+            if (!musicStarted && !isMusicMuted) {
+                bgMusic.play().catch(e => console.log(e));
+                musicStarted = true;
+                document.getElementById('btn-music').innerHTML = '<img src="music.png" alt="Music" id="icon-music"> Music: ON';
+            }
+        }, { once: true });
+
+        const soundClick = new Audio('click.mp3');
+        const soundTrue = new Audio('true.mp3');
+        const soundFalse = new Audio('false.mp3');
+        const soundFinished = new Audio('finished.mp3');
+
+        function playSound(audioObj) {
+            audioObj.currentTime = 0; 
+            audioObj.play().catch(e => console.log(e));
+        }
+
+        const funFacts = [
+            "Psst! Hard disk pertama di dunia besarnya sebesar dua kulkas, lho!",
+            "Kapasitas RAM yang besar bikin komputermu lancar buka puluhan tab browser sekaligus!",
+            "Otaknya komputer memang CPU, tapi grafis game yang mulus itu hasil kerja GPU!",
+            "Kabel di Motherboard itu bagaikan jalan tol untuk ngirim data super cepat!",
+            "Jangan sembarangan mencabut Flashdisk ya, datamu bisa rusak!"
+        ];
+        const affirmCorrect = ["Keren banget!", "Tepat sasaran!", "Kamu jenius!", "Bagus! Lanjutkan!", "XP kamu bertambah!"];
+        const affirmWrong = ["Ups, kurang tepat!", "Aduh, coba ingat-ingat lagi!", "Sayang sekali, masih salah.", "Coba perhatikan lagi ya!"];
+
+        function showBubble(text, duration = 3000) {
+            const bubble = document.getElementById('mascot-bubble');
+            if(!bubble) return;
+            
+            bubble.innerText = text;
+            bubble.classList.remove('m-hidden');
+            
+            const mascot = document.getElementById('global-mascot');
+            if(mascot.classList.contains('m-show-left')) {
+                bubble.classList.add('sb-left'); bubble.classList.remove('sb-right');
+            } else {
+                bubble.classList.add('sb-right'); bubble.classList.remove('sb-left');
+            }
+
+            if(window.bubbleTimer) clearTimeout(window.bubbleTimer);
+            window.bubbleTimer = setTimeout(() => {
+                bubble.classList.add('m-hidden');
+            }, duration);
+        }
+
+        let scores = { quiz1: 0, quiz2: 0, quiz3: 0, quiz4: 0, final: 0 };
+        let progress = { lvl1: 0, lvl2: 0, lvl3: 0, lvl4: 0 }; 
+        let failedMatches = new Set();
+        let failedDnD = new Set();
+        
+        let currentMaxLevel = 1; 
+        let currentLevelLives = 3;
+        let currentActiveLevel = 0;
+
+        let isAdmin = false;
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.shiftKey && (e.key === 'a' || e.key === 'A')) {
+                isAdmin = !isAdmin;
+                if (isAdmin) {
+                    document.querySelectorAll('.map-node').forEach(node => {
+                        node.classList.remove('locked');
+                        node.style.filter = 'none'; 
+                        node.style.cursor = 'pointer';
+                    });
+                }
+                updateButtons(); 
+            }
+        });
+
+        function toggleTheme() {
+            playSound(soundClick);
+            const body = document.body;
+            const btn = document.querySelector('.theme-btn');
+            const bg = document.querySelector('.global-bg');
+            body.classList.toggle('dark-theme');
+            
+            if (body.classList.contains('dark-theme')) { 
+                btn.innerHTML = '<img src="light.png" alt="Light" id="icon-theme"> Light Mode'; 
+                bg.style.backgroundImage = "url('dark-bg.jpg')";
+            } else { 
+                btn.innerHTML = '<img src="dark.png" alt="Dark" id="icon-theme"> Dark Mode'; 
+                bg.style.backgroundImage = "url('light-bg.jpg')";
+            }
+        }
+
+        function updateXP() {
+            const globalScore = scores.quiz1 + scores.quiz2 + scores.quiz3 + scores.quiz4 + scores.final;
+            const maxXP = 30; 
+            let percentage = (globalScore / maxXP) * 100;
+            document.getElementById('xp-fill').style.width = `${percentage}%`;
+            document.getElementById('xp-text').innerText = `${globalScore} XP`;
+        }
+
+        function updateProgressTracker(level) {
+            const el = document.getElementById(`progress-text-lvl${level}`);
+            if(!el) return;
+            let current = progress[`lvl${level}`];
+            let max = (level === 3) ? 8 : 6; 
+            el.innerText = `Progress Selesai: ${current} / ${max}`;
+        }
+
+        function updateMascotPosition() {
+            const mascot = document.getElementById('global-mascot');
+            if(!mascot) return;
+            
+            const pageId = pagesArray[currentPage - 1].id;
+
+            if (pageId === 'page-story') {
+                mascot.src = 'mascot-hello.png';
+            } else if (pageId === 'page-map') {
+                mascot.src = 'mascot-float.png';
+            } else if (pageId === 'page-lvl1-materi' || pageId === 'page-lvl1-quiz') {
+                mascot.src = 'mascot-point.png';
+            } else if (pageId === 'page-lvl2-materi' || pageId === 'page-lvl2-quiz') {
+                mascot.src = 'mascot-hold.png';
+            } else if (pageId === 'page-lvl3-materi' || pageId === 'page-lvl3-quiz' || pageId === 'page-lvl4-materi' || pageId === 'page-lvl4-quiz') {
+                mascot.src = 'mascot-hud.png';
+            } else if (pageId === 'page-lvl5-game') {
+                mascot.src = 'mascot-boss.png';
+            } else {
+                mascot.src = 'mascot-hello.png';
+            }
+
+            mascot.classList.remove('m-show-left', 'm-show-right');
+            if (currentPage % 2 === 0) {
+                mascot.classList.add('m-show-left');
+                mascot.style.transform = 'scaleX(1)';
+            } else {
+                mascot.classList.add('m-show-right');
+                mascot.style.transform = 'scaleX(-1)';
+            }
+            
+            if(pageId === 'page-cover' || pageId === 'page-story' || pageId === 'page-evaluation') { 
+                mascot.classList.add('m-hidden'); 
+            } else { 
+                mascot.classList.remove('m-hidden'); 
+            }
+        }
+
+        function randomizeOrnaments() {
+            const container = document.getElementById('global-ornaments');
+            container.innerHTML = ''; 
+            
+            let images = ['ornament1.png', 'ornament2.png', 'ornament3.png'];
+            images.sort(() => Math.random() - 0.5);
+            
+            const zones = [
+                { top: Math.random() * 15 - 5 + '%', left: Math.random() * 10 - 5 + '%' },
+                { top: Math.random() * 15 - 5 + '%', right: Math.random() * 10 - 5 + '%' },
+                { top: Math.random() * 20 + 40 + '%', left: Math.random() * 10 - 10 + '%' },
+                { top: Math.random() * 20 + 40 + '%', right: Math.random() * 10 - 10 + '%' },
+                { bottom: Math.random() * 15 - 5 + '%', left: Math.random() * 10 - 5 + '%' },
+                { bottom: Math.random() * 15 - 5 + '%', right: Math.random() * 10 - 5 + '%' }
+            ];
+
+            images.forEach((src, index) => {
+                let img = document.createElement('img');
+                img.src = src;
+                img.className = 'dynamic-ornament';
+                
+                let zone = zones[index];
+                if(zone.top) img.style.top = zone.top;
+                if(zone.bottom) img.style.bottom = zone.bottom;
+                if(zone.left) img.style.left = zone.left;
+                if(zone.right) img.style.right = zone.right;
+                
+                let size = Math.floor(Math.random() * 170) + 150;
+                img.style.width = size + 'px';
+                
+                let rot = Math.floor(Math.random() * 360);
+                img.style.transform = `rotate(${rot}deg)`;
+                
+                container.appendChild(img);
+            });
+        }
+
+        let currentPage = 1;
+        const pagesArray = Array.from(document.querySelectorAll('.page'));
+        const totalPages = pagesArray.length;
+        
+        function updateButtons() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const mascot = document.getElementById('global-mascot');
+            
+            prevBtn.disabled = currentPage === 1;
+            nextBtn.disabled = currentPage === totalPages;
+            
+            const pageId = pagesArray[currentPage - 1].id;
+            const navBottom = document.getElementById('nav-container-bottom');
+
+            if(pageId === 'page-cover' || pageId === 'page-story' || pageId === 'page-map' || pageId === 'page-evaluation' || pageId === 'page-12') {
+                navBottom.style.display = 'none';
+                if(mascot) mascot.classList.remove('m-lifted');
+            } else {
+                navBottom.style.display = 'flex';
+                if(mascot) mascot.classList.add('m-lifted');
+                
+                if((pageId.includes('quiz') || pageId.includes('game')) && !isAdmin) {
+                    nextBtn.style.visibility = 'hidden';
+                    prevBtn.style.visibility = 'hidden'; 
+                } else {
+                    nextBtn.style.visibility = 'visible';
+                    prevBtn.style.visibility = 'visible';
+                }
+            }
+        }
+
+        function navigate(direction) {
+            playSound(soundClick);
+            const actualPageEl = pagesArray[currentPage-1];
+            if (direction === 1 && currentPage < totalPages) {
+                actualPageEl.classList.remove('active'); currentPage++; pagesArray[currentPage-1].classList.add('active');
+            } else if (direction === -1 && currentPage > 1) {
+                actualPageEl.classList.remove('active'); currentPage--; pagesArray[currentPage-1].classList.add('active');
+            }
+            updateButtons(); updateTopBarButtons(pagesArray[currentPage-1].id);
+            randomizeOrnaments();
+            
+            const bubble = document.getElementById('mascot-bubble');
+            if(bubble) bubble.classList.add('m-hidden');
+            
+            if (pagesArray[currentPage-1].id.includes('materi')) {
+                setTimeout(() => {
+                    const randomFact = funFacts[Math.floor(Math.random() * funFacts.length)];
+                    showBubble(randomFact, 4000);
+                }, 1000);
+            }
+        }
+
+        function goToPage(pageId) {
+            playSound(soundClick);
+            pagesArray.forEach(p => { p.classList.remove('active'); });
+            const targetPage = document.getElementById(pageId);
+            targetPage.classList.add('active');
+            currentPage = pagesArray.indexOf(targetPage) + 1;
+            updateButtons(); updateTopBarButtons(pageId);
+            randomizeOrnaments();
+            
+            const bubble = document.getElementById('mascot-bubble');
+            if(bubble) bubble.classList.add('m-hidden');
+
+            if (pageId.includes('materi')) {
+                setTimeout(() => {
+                    const randomFact = funFacts[Math.floor(Math.random() * funFacts.length)];
+                    showBubble(randomFact, 4000);
+                }, 1000);
+            }
+
+            if(pageId === 'page-evaluation') {
+                playSound(soundFinished);
+                calculateFinalScore();
+            }
+        }
+
+        function updateTopBarButtons(pageId) {
+            const btnHome = document.getElementById('btn-home');
+            const btnMap = document.getElementById('btn-map');
+            const lifeContainer = document.getElementById('life-container');
+            const xpWrapper = document.getElementById('xp-wrapper');
+
+            if(pageId === 'page-cover') {
+                btnHome.style.display = 'none'; btnMap.style.display = 'none';
+                lifeContainer.style.display = 'none'; xpWrapper.style.display = 'none';
+            } else if(pageId === 'page-story' || pageId === 'page-map') {
+                btnHome.style.display = 'flex'; btnMap.style.display = 'none';
+                lifeContainer.style.display = 'none'; xpWrapper.style.display = 'flex';
+            } else if(pageId === 'page-evaluation' || pageId === 'page-12') {
+                btnHome.style.display = 'flex'; btnMap.style.display = 'flex';
+                lifeContainer.style.display = 'none'; xpWrapper.style.display = 'flex';
+            } else if(pageId.includes('quiz') || pageId.includes('game')) {
+                btnHome.style.display = 'none'; btnMap.style.display = 'none';
+                lifeContainer.style.display = 'block'; xpWrapper.style.display = 'flex';
+            } else {
+                btnHome.style.display = 'flex'; btnMap.style.display = 'flex';
+                lifeContainer.style.display = 'block'; xpWrapper.style.display = 'flex';
+            }
+            updateMascotPosition();
+        }
+        
+        updateXP(); updateButtons(); updateTopBarButtons('page-cover'); randomizeOrnaments();
+
+        function resetDOMForLevel(level) {
+            const quizPage = document.getElementById(`page-lvl${level}-quiz`);
+            if(quizPage) {
+                const containers = quizPage.querySelectorAll('.quiz-container');
+                containers.forEach(c => {
+                    c.dataset.answered = "false";
+                    c.querySelectorAll('.quiz-option, .tf-btn').forEach(btn => {
+                        btn.classList.remove('correct', 'wrong'); btn.style.opacity = '1';
+                        btn.style.pointerEvents = 'auto'; btn.style.transform = 'scale(1)';
+                    });
+                    const res = c.querySelector('.quiz-result');
+                    if(res) { res.style.display = 'none'; res.innerHTML = ''; }
+                });
+            }
+            
+            if(level === 2) {
+                matchCount = 0; failedMatches.clear();
+                document.querySelectorAll('.hardware-item, .definition-box').forEach(el => {
+                    el.classList.remove('matched', 'selected');
+                    el.style.backgroundColor = ''; el.style.borderColor = ''; el.style.color = '';
+                });
+                const matchRes = document.getElementById('matching-result');
+                if(matchRes) { matchRes.style.display = 'none'; matchRes.innerHTML = ''; }
+            }
+            
+            if(level === 3) {
+                currentSortIndex = 0; isSorting = false;
+                const sortSuccess = document.getElementById('sort-success');
+                if(sortSuccess) sortSuccess.style.display = 'none';
+                renderSortItem();
+            }
+            
+            if(level === 5) {
+                resetDnD(); failedDnD.clear();
+                const btnFinish5 = document.getElementById('btn-finish-lvl5');
+                if(btnFinish5) btnFinish5.style.display = 'none';
+            }
+            
+            if(level < 5) { updateProgressTracker(level); }
+        }
+
+        function startLevel(levelNum, targetPageId) {
+            if(levelNum > currentMaxLevel && !isAdmin) {
+                playSound(soundFalse); alert("Level terkunci! Selesaikan level sebelumnya terlebih dahulu."); return;
+            }
+            playSound(soundClick); currentActiveLevel = levelNum; currentLevelLives = 3; 
+            updateLivesUI(); goToPage(targetPageId);
+        }
+
+        function updateLivesUI() {
+            document.getElementById('hearts').innerHTML = '❤️'.repeat(currentLevelLives) + '🖤'.repeat(3 - currentLevelLives);
+        }
+
+        function handleWrongAnswer() {
+            currentLevelLives--;
+            updateLivesUI();
+            if(currentLevelLives <= 0) {
+                setTimeout(() => {
+                    alert("Nyawa habis! Kuis di-reset dan kamu dikembalikan ke materi untuk membaca ulang.");
+                    currentLevelLives = 3; updateLivesUI();
+                    
+                    if(currentActiveLevel === 5) { scores.final = 0; } 
+                    else { scores[`quiz${currentActiveLevel}`] = 0; }
+                    updateXP(); 
+                    
+                    if(currentActiveLevel === 1) progress.lvl1 = 0;
+                    if(currentActiveLevel === 2) progress.lvl2 = 0;
+                    if(currentActiveLevel === 3) progress.lvl3 = 0;
+                    if(currentActiveLevel === 4) progress.lvl4 = 0;
+                    
+                    const btnFinish = document.getElementById(`btn-finish-lvl${currentActiveLevel}`);
+                    if(btnFinish) btnFinish.style.display = 'none';
+                    
+                    resetDOMForLevel(currentActiveLevel);
+                    let matPage = currentActiveLevel === 5 ? 'page-map' : `page-lvl${currentActiveLevel}-materi`;
+                    goToPage(matPage);
+                }, 300);
+            }
+        }
+
+        function checkLevelCompletionLock(level) {
+            if(level === 1 && progress.lvl1 >= 6) { document.getElementById('btn-finish-lvl1').style.display = 'flex'; }
+            if(level === 2 && progress.lvl2 >= 6) { document.getElementById('btn-finish-lvl2').style.display = 'flex'; }
+            if(level === 3 && progress.lvl3 >= 8) { document.getElementById('btn-finish-lvl3').style.display = 'flex'; }
+            if(level === 4 && progress.lvl4 >= 6) { document.getElementById('btn-finish-lvl4').style.display = 'flex'; }
+        }
+
+        function completeLevel(levelNum) {
+            if(currentMaxLevel === levelNum) { currentMaxLevel++; }
+            
+            if(levelNum < 5) {
+                const nextNode = document.getElementById(`node-${levelNum + 1}`);
+                if(nextNode) {
+                    nextNode.classList.remove('locked'); nextNode.classList.add('node-unlocked');
+                    let iconImg = document.getElementById(`icon-node-${levelNum + 1}`);
+                    if(iconImg) iconImg.src = 'node' + (levelNum + 1) + '.png';
+                }
+            }
+            
+            const currNode = document.getElementById(`node-${levelNum}`);
+            if(currNode) currNode.classList.add('completed');
+            
+            if(levelNum === 5) { goToPage('page-12'); } 
+            else { goToPage('page-map'); }
+        }
+
+        function checkAnswerWithLife(element, isCorrect, resultId, levelAssociated) {
+            const container = element.parentElement.parentElement;
+            if(container.dataset.answered === "true") return; 
+            container.dataset.answered = "true";
+
+            const options = element.parentElement.children;
+            for(let opt of options) { opt.style.pointerEvents = 'none'; opt.style.opacity = '0.6'; }
+            element.style.opacity = '1';
+            
+            const resultDiv = document.getElementById(resultId); resultDiv.style.display = 'block';
+            
+            progress[`lvl${levelAssociated}`]++;
+            updateProgressTracker(levelAssociated);
+            
+            if (isCorrect) { 
+                playSound(soundTrue);
+                element.classList.add('correct'); 
+                resultDiv.style.color = 'var(--success)'; resultDiv.innerHTML = "Tepat sekali! ✅"; 
+                scores[`quiz${levelAssociated}`]++; updateXP();
+                showBubble(affirmCorrect[Math.floor(Math.random() * affirmCorrect.length)], 2000);
+            } else {
+                playSound(soundFalse);
+                element.classList.add('wrong'); 
+                resultDiv.style.color = 'var(--danger)'; resultDiv.innerHTML = "Salah! ❌";
+                for(let opt of options) { if(opt.getAttribute('onclick').includes('true')) opt.classList.add('correct'); }
+                handleWrongAnswer();
+                showBubble(affirmWrong[Math.floor(Math.random() * affirmWrong.length)], 2000);
+            }
+            checkLevelCompletionLock(levelAssociated);
+        }
+
+        function checkTF(element, isCorrect, resultId, successMsg, levelAssociated) {
+            const container = element.parentElement.parentElement;
+            if(container.dataset.answered === "true") return; container.dataset.answered = "true";
+
+            const options = element.parentElement.children;
+            for(let opt of options) { opt.style.pointerEvents = 'none'; opt.style.opacity = '0.5'; }
+            element.style.opacity = '1';
+
+            const resultDiv = document.getElementById(resultId); resultDiv.style.display = 'block';
+            
+            progress[`lvl${levelAssociated}`]++;
+            updateProgressTracker(levelAssociated);
+
+            if (isCorrect) { 
+                playSound(soundTrue);
+                element.style.transform = 'scale(1.05)'; 
+                resultDiv.style.color = 'var(--success)'; 
+                resultDiv.innerHTML = `Benar! ✅ ${successMsg}`; 
+                scores[`quiz${levelAssociated}`]++; updateXP();
+                showBubble(affirmCorrect[Math.floor(Math.random() * affirmCorrect.length)], 2000);
+            } else { 
+                playSound(soundFalse);
+                resultDiv.style.color = 'var(--danger)'; 
+                resultDiv.innerHTML = "Sayang sekali tebakanmu salah! ❌"; 
+                handleWrongAnswer();
+                showBubble(affirmWrong[Math.floor(Math.random() * affirmWrong.length)], 2000);
+            }
+            checkLevelCompletionLock(levelAssociated);
+        }
+
+        function toggleAccordion(header) {
+            playSound(soundClick);
+            const content = header.nextElementSibling; const arrow = header.querySelector('span:last-child');
+            if (content.classList.contains('show')) { content.classList.remove('show'); arrow.textContent = '▼'; } 
+            else { content.classList.add('show'); arrow.textContent = '▲'; }
+        }
+
+        let selectedHardware = null; let matchCount = 0; 
+        function selectHardware(element, id) {
+            playSound(soundClick);
+            if(element.classList.contains('matched')) return;
+            document.querySelectorAll('.hardware-item:not(.matched)').forEach(el => el.classList.remove('selected'));
+            element.classList.add('selected'); selectedHardware = id;
+        }
+
+        function selectDefinition(element, id) {
+            if(element.classList.contains('matched')) return;
+            if (!selectedHardware) { alert('Pilih terlebih dahulu perangkat di sebelah kiri ya! 👈'); return; }
+            
+            if (selectedHardware === id) {
+                playSound(soundTrue);
+                const hwElement = document.getElementById(`hw-${id}`);
+                if (hwElement) { hwElement.classList.add('matched'); hwElement.classList.remove('selected'); }
+                element.classList.add('matched');
+                
+                if(!failedMatches.has(id)) { scores.quiz2++; updateXP(); }
+                matchCount++;
+                
+                progress.lvl2++; 
+                updateProgressTracker(2);
+                checkLevelCompletionLock(2);
+
+                const resultDiv = document.getElementById('matching-result');
+                resultDiv.style.display = 'block';
+                resultDiv.innerHTML = `${matchCount}/6 pasangan tercocokkan!`;
+                
+                if (matchCount === 6) { 
+                    resultDiv.innerHTML = '🎉 Seluruh 6 perangkat telah dipasangkan dengan benar!'; 
+                    resultDiv.style.color = 'var(--success)'; 
+                    showBubble("Wah kamu hebat banget!", 3000);
+                } else {
+                    showBubble(affirmCorrect[Math.floor(Math.random() * affirmCorrect.length)], 1500);
+                }
+            } else {
+                playSound(soundFalse);
+                failedMatches.add(selectedHardware);
+                handleWrongAnswer();
+                showBubble(affirmWrong[Math.floor(Math.random() * affirmWrong.length)], 2000);
+                
+                element.style.backgroundColor = 'var(--quiz-wrong-bg)'; 
+                element.style.borderColor = 'var(--danger)'; 
+                element.style.color = 'var(--danger)';
+                setTimeout(() => { 
+                    if(!element.classList.contains('matched')){ 
+                        element.style.backgroundColor = ''; element.style.borderColor = ''; element.style.color = ''; 
+                    } 
+                }, 800);
+            }
+            selectedHardware = null; document.querySelectorAll('.hardware-item:not(.matched)').forEach(el => el.classList.remove('selected'));
+        }
+
+        const sortItems = [
+            { img: 'mouse.png', name: 'Mouse', type: 'input' },
+            { img: 'keyboard.png', name: 'Keyboard', type: 'input' },
+            { img: 'monitor.png', name: 'Monitor', type: 'output' },
+            { img: 'printer.png', name: 'Printer', type: 'output' },
+            { img: 'microphone.png', name: 'Microphone', type: 'input' },
+            { img: 'speaker.png', name: 'Speaker', type: 'output' },
+            { img: 'webcam.png', name: 'Webcam', type: 'input' },
+            { img: 'headphone.png', name: 'Headset', type: 'output' }
+        ];
+        let currentSortIndex = 0; let isSorting = false; 
+
+        function renderSortItem() {
+            if(currentSortIndex < sortItems.length) {
+                const item = sortItems[currentSortIndex];
+                document.getElementById('sort-progress').innerText = `Perangkat ${currentSortIndex + 1} dari ${sortItems.length}`;
+                document.getElementById('sort-card-content').innerHTML = `
+                    <img src="${item.img}" alt="${item.name}" style="width:160px; height:160px; object-fit:contain; margin:0 auto 15px auto;">
+                    <span>${item.name}</span>
+                `;
+            } else {
+                document.getElementById('sort-game-area').style.display = 'none';
+                const successMsg = document.getElementById('sort-success');
+                successMsg.style.display = 'block'; successMsg.style.color = 'var(--success)';
+                showBubble("Sempurna! Semua terklasifikasi!", 3000);
+            }
+        }
+
+        function checkSort(userChoice) {
+            if(isSorting) return;
+            isSorting = true;
+            
+            const item = sortItems[currentSortIndex];
+            const card = document.getElementById('sort-card-content');
+            
+            progress.lvl3++; 
+            updateProgressTracker(3);
+            checkLevelCompletionLock(3);
+            
+            if(userChoice === item.type) {
+                playSound(soundTrue);
+                scores.quiz3++; updateXP();
+                card.style.transform = 'scale(1.05)'; card.style.borderColor = '#10B981'; card.style.backgroundColor = 'var(--quiz-correct-bg)';
+                showBubble(affirmCorrect[Math.floor(Math.random() * affirmCorrect.length)], 1500);
+            } else {
+                playSound(soundFalse);
+                card.classList.add('error');
+                handleWrongAnswer();
+                showBubble(affirmWrong[Math.floor(Math.random() * affirmWrong.length)], 2000);
+            }
+            
+            setTimeout(() => {
+                card.style.transform = 'scale(1)'; card.style.borderColor = 'var(--light-blue)'; card.style.backgroundColor = 'var(--glass-bg)'; card.classList.remove('error');
+                currentSortIndex++; renderSortItem(); isSorting = false;
+            }, 600);
+        }
+        renderSortItem();
+
+        const draggables = document.querySelectorAll('.draggable-item');
+        const dropZones = document.querySelectorAll('.drop-zone');
+        let partsAssembled = 0;
+
+        draggables.forEach(draggable => {
+            draggable.addEventListener('dragstart', (e) => {
+                playSound(soundClick); draggable.classList.add('dragging'); e.dataTransfer.setData('text/plain', draggable.id);
+            });
+            draggable.addEventListener('dragend', () => { draggable.classList.remove('dragging'); });
+        });
+
+        dropZones.forEach(zone => {
+            zone.addEventListener('dragover', (e) => { e.preventDefault(); if(!zone.classList.contains('filled')) zone.classList.add('hovered'); });
+            zone.addEventListener('dragleave', () => { zone.classList.remove('hovered'); });
+            zone.addEventListener('drop', (e) => {
+                e.preventDefault(); zone.classList.remove('hovered');
+                const draggedElementId = e.dataTransfer.getData('text/plain');
+                const draggedElement = document.getElementById(draggedElementId);
+                const expectedComponent = zone.getAttribute('data-accept');
+                const draggedComponent = draggedElement.getAttribute('data-id');
+
+                if (expectedComponent === draggedComponent) {
+                    playSound(soundTrue);
+                    const label = zone.querySelector('.label'); if(label) label.style.display = 'none';
+                    
+                    zone.appendChild(draggedElement); zone.classList.add('filled');
+                    draggedElement.setAttribute('draggable', 'false'); draggedElement.style.cursor = 'default';
+                    
+                    if(!failedDnD.has(draggedComponent)) { scores.final++; updateXP(); }
+                    partsAssembled++;
+
+                    if (partsAssembled === 4) {
+                        const successMsg = document.getElementById('dnd-success'); successMsg.style.display = 'block'; 
+                        const finishBtn = document.getElementById('btn-finish-lvl5'); if (finishBtn) finishBtn.style.display = 'flex';
+                        showBubble("PC Menyala! Ayo pulang!", 3000);
+                    } else {
+                        showBubble(affirmCorrect[Math.floor(Math.random() * affirmCorrect.length)], 1500);
+                    }
+                } else {
+                    playSound(soundFalse);
+                    failedDnD.add(draggedComponent); zone.classList.add('error'); 
+                    handleWrongAnswer(); setTimeout(() => { zone.classList.remove('error'); }, 400);
+                    showBubble("Komponen tidak cocok!", 2000);
+                }
+            });
+        });
+
+        function resetDnD() {
+            partsAssembled = 0;
+            document.getElementById('dnd-success').style.display = 'none';
+            const inventory = document.querySelector('.inventory');
+            dropZones.forEach(zone => {
+                zone.classList.remove('filled');
+                const label = zone.querySelector('.label'); if(label) label.style.display = 'block';
+                const item = zone.querySelector('.draggable-item');
+                if(item) { item.setAttribute('draggable', 'true'); item.style.cursor = 'grab'; inventory.appendChild(item); }
+            });
+        }
+
+        function calculateFinalScore() {
+            const globalScore = scores.quiz1 + scores.quiz2 + scores.quiz3 + scores.quiz4 + scores.final;
+            const max = 30; const percentage = Math.round((globalScore / max) * 100);
+            
+            document.getElementById('final-score').innerText = `${globalScore} / ${max} XP`;
+            
+            let msgEl = document.getElementById('final-message');
+            if(percentage >= 80) { msgEl.innerText = "Luar Biasa! Kamu pantas jadi Master Hardware! 🏆🔥"; msgEl.style.color = "var(--success)"; } 
+            else if (percentage >= 50) { msgEl.innerText = "Bagus! Pengetahuan komputermu lumayan solid! 🚀"; msgEl.style.color = "var(--accent)"; } 
+            else { msgEl.innerText = "Jangan menyerah! Belajar lagi pelan-pelan ya! 💪"; msgEl.style.color = "var(--danger)"; }
+        }
+    </script>
+</body>
+</html>
